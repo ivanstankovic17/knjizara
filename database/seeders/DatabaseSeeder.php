@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Author;
+use App\Models\Book;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -10,16 +13,29 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(CategorySeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::factory()->admin()->create([
+            'name' => 'Ana Petrović',
+            'email' => 'ana@knjizara.test',
         ]);
+        User::factory(10)->create();
+
+        $authors = Author::factory(20)->create();
+
+        Book::factory(60)
+            ->recycle(Category::all())
+            ->create()
+            ->each(function (Book $book) use ($authors) {
+                $picked = $authors->random(fake()->numberBetween(1, 2));
+
+                foreach ($picked->values() as $i => $author) {
+                    $book->authors()->attach($author, [
+                        'position' => $i + 1,
+                    ]);
+                }
+            });
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\PriceFormatter;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Lenjo učitavanje, tiho odbačeni i nepostojeći atributi
+        // bacaju izuzetak, ali samo van produkcije.
+        Model::shouldBeStrict(! $this->app->isProduction());
     }
 }
