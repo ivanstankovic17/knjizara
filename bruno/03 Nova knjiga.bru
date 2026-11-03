@@ -1,0 +1,26 @@
+meta {
+  name: Nova knjiga
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Prokleta avlija",
+    "isbn": "9788652107435",
+    "price": 990,
+    "category_id": 1,
+    "author_ids": [7]
+  }
+}

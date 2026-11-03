@@ -1,0 +1,22 @@
+meta {
+  name: Izmena knjige
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/books/1
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "price": 1090
+  }
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Nova porudzbina
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "items": [
+      { "book_id": 1, "quantity": 2 },
+      { "book_id": 22, "quantity": 1 }
+    ]
+  }
+}
