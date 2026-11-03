@@ -13,3 +13,8 @@ get {
 headers {
   Accept: application/json
 }
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+}
