@@ -9,7 +9,8 @@ class BookInOrdersException extends ConflictException
     public function __construct(public readonly Book $book, int $orders)
     {
         parent::__construct(sprintf(
-            'Knjiga %d se nalazi u %d %s.', $book->id, $orders, self::orders($orders),
+            'Knjiga %d se nalazi u %d %s.',
+            $book->id, $orders, self::orders($orders),
         ));
     }
 

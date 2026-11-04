@@ -33,7 +33,8 @@ class Book extends Model
     protected static function booted(): void
     {
         static::creating(function (Book $book) {
-            while ($book->slug === null || static::where('slug', $book->slug)->exists()) {
+            while ($book->slug === null
+            || static::where('slug', $book->slug)->exists()) {
                 $book->slug = Str::slug($book->title).'-'.random_int(1000, 9999);
             }
         });

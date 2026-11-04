@@ -57,7 +57,8 @@ final class Problem
             ],
             default => [
                 'status' => 500,
-                'detail' => 'Došlo je do greške na serveru. Pokušajte ponovo kasnije.',
+                'detail' => 'Došlo je do greške na serveru. '
+                    .'Pokušajte ponovo kasnije.',
             ],
         };
 
@@ -68,7 +69,8 @@ final class Problem
             'status' => $status,
             'detail' => $p['detail'],
             'instance' => '/'.$request->path(),
-            ...array_diff_key($p, array_flip(['status', 'type', 'title', 'detail'])),
+            ...array_diff_key($p,
+                array_flip(['status', 'type', 'title', 'detail'])),
             'request_id' => $request->attributes->get('request_id'),
         ];
 

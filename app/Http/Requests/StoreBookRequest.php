@@ -28,10 +28,13 @@ class StoreBookRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:5000'],
             'price' => ['required', 'integer', 'between:1,1000000'],
             'stock' => ['sometimes', 'integer', 'min:0'],
-            'published_year' => ['nullable', 'integer', 'between:1450,'.now()->year],
-            'category_id' => ['required', 'integer', Rule::exists('categories', 'id')],
+            'published_year' => [
+                'nullable', 'integer', 'between:1450,'.now()->year],
+            'category_id' => [
+                'required', 'integer', Rule::exists('categories', 'id')],
             'author_ids' => ['required', 'array', 'min:1', 'max:10'],
-            'author_ids.*' => ['integer', 'distinct', Rule::exists('authors', 'id')],
+            'author_ids.*' => [
+                'integer', 'distinct', Rule::exists('authors', 'id')],
         ];
     }
 
@@ -42,7 +45,8 @@ class StoreBookRequest extends FormRequest
     {
         $this->merge(array_filter([
             'title' => is_string($this->title) ? trim($this->title) : $this->title,
-            'isbn' => is_string($this->isbn) ? str_replace(['-', ' '], '', $this->isbn) : $this->isbn,
+            'isbn' => is_string($this->isbn)
+            ? str_replace(['-', ' '], '', $this->isbn) : $this->isbn,
         ], fn ($v) => $v !== null));
     }
 }

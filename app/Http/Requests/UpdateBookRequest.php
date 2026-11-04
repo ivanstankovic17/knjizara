@@ -22,7 +22,8 @@ class UpdateBookRequest extends StoreBookRequest
             Rule::unique('books', 'isbn')->ignore($this->route('book')),
         ];
 
-        foreach (['title', 'isbn', 'price', 'category_id', 'author_ids'] as $field) {
+        $required = ['title', 'isbn', 'price', 'category_id', 'author_ids'];
+        foreach ($required as $field) {
             array_unshift($rules[$field], 'sometimes');
         }
 
