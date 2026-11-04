@@ -14,8 +14,10 @@ class HomeController extends Controller
         $features = [
             ['name' => 'API status', 'chapter' => 3, 'done' => true],
             ['name' => 'Middleware i jezik', 'chapter' => 4, 'done' => true],
-            ['name' => 'Katalog u bazi', 'chapter' => 5, 'done' => false],
-            ['name' => 'REST API kataloga', 'chapter' => 7, 'done' => false],
+            ['name' => 'Katalog u bazi', 'chapter' => 5, 'done' => true],
+            ['name' => 'REST API kataloga', 'chapter' => 7, 'done' => true],
+            ['name' => 'Validacija i format grešaka', 'chapter' => 8, 'done' => true],
+            ['name' => 'JavaScript klijent: katalog i korpa', 'chapter' => 9, 'done' => true],
             ['name' => 'Prijava i porudžbine', 'chapter' => 11, 'done' => false],
         ];
 
