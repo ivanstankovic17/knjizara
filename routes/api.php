@@ -21,7 +21,10 @@ Route::prefix('v1')
     ->middleware('throttle:api')
     ->group(function () {
         Route::apiResource('books', BookController::class)
-            ->only(['index', 'show']);
+            ->only(['index', 'store', 'show', 'destroy']);
+        // Samo PATCH, bez PUT (odeljak 6.3).
+        Route::patch('books/{book}', [BookController::class, 'update'])
+            ->name('books.update');
 
         Route::apiResource('authors', AuthorController::class)
             ->only(['index', 'show']);

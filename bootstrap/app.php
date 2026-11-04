@@ -1,8 +1,12 @@
 <?php
 
+use App\Exceptions\ConflictException;
 use App\Http\Middleware\AddResponseTime;
+use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\ForceJsonAccept;
+use App\Http\Middleware\RequireJsonBody;
 use App\Http\Middleware\SetLocale;
+use App\Http\Problem;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,12 +20,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(AssignRequestId::class);
         $middleware->append(AddResponseTime::class);
-        $middleware->api(prepend: [ForceJsonAccept::class]);
+        $middleware->api(prepend: [ForceJsonAccept::class, RequireJsonBody::class]);
         $middleware->alias(['locale' => SetLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Sve greške API-ja imaju isti oblik: RFC 9457 (odeljak 8.6).
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if ($request->is('api/*')) {
+                return Problem::from($e, $request);
+            }
+        });
+
+        // Sukob sa stanjem podataka je očekivan ishod, a ne greška u kodu.
+        $exceptions->dontReport(ConflictException::class);
     })->create();

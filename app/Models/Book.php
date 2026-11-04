@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'category_id', 'title', 'slug', 'isbn', 'description',
@@ -24,6 +25,19 @@ class Book extends Model
     protected $attributes = [
         'stock' => 0,
     ];
+
+    /**
+     * Nova knjiga bez sluga dobija ga iz naslova, sa četiri cifre na
+     * kraju, jer više knjiga može imati isti naslov.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Book $book) {
+            while ($book->slug === null || static::where('slug', $book->slug)->exists()) {
+                $book->slug = Str::slug($book->title).'-'.random_int(1000, 9999);
+            }
+        });
+    }
 
     protected function casts(): array
     {
