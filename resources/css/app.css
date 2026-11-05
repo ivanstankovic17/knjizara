@@ -143,6 +143,15 @@ input, select, textarea {
     color: var(--greska);
 }
 
+/* Kratko isticanje kartice koja se promenila u realnom vremenu. */
+.knjiga {
+    transition: box-shadow 0.4s;
+}
+
+.knjiga.promenjeno {
+    box-shadow: 0 0 0 3px var(--boja);
+}
+
 .link {
     padding: 0;
     border: 0;

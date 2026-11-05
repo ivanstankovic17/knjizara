@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\BookAvailabilityChanged;
 use Database\Factories\BookFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 #[Fillable([
@@ -36,6 +38,22 @@ class Book extends Model
             while ($book->slug === null
             || static::where('slug', $book->slug)->exists()) {
                 $book->slug = Str::slug($book->title).'-'.random_int(1000, 9999);
+            }
+        });
+
+        // Broj knjiga po kategoriji je u kešu (odeljak 10.3).
+        static::created(fn () => Cache::forget(Category::CACHE_KEY));
+        static::deleted(fn () => Cache::forget(Category::CACHE_KEY));
+
+        static::updated(function (Book $book) {
+            if ($book->wasChanged('category_id')) {
+                Cache::forget(Category::CACHE_KEY);
+            }
+
+            // Knjiga je rasprodata ili je ponovo na stanju (odeljak 10.6).
+            if ($book->wasChanged('stock')
+                && ($book->getOriginal('stock') > 0) !== ($book->stock > 0)) {
+                BookAvailabilityChanged::dispatch($book);
             }
         });
     }

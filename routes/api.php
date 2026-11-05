@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthorBookController;
 use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\BookController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\StatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,8 @@ Route::prefix('v1')
     ->middleware('throttle:api')
     ->group(function () {
         Route::apiResource('books', BookController::class)
-            ->only(['index', 'store', 'show', 'destroy']);
+            ->only(['index', 'store', 'show', 'destroy'])
+            ->middlewareFor('store', 'idempotent');
         // Samo PATCH, bez PUT (odeljak 6.3).
         Route::patch('books/{book}', [BookController::class, 'update'])
             ->name('books.update');
@@ -35,4 +37,10 @@ Route::prefix('v1')
             ->only(['index', 'show'])
             ->parameters(['categories' => 'category:slug'])
             ->middleware('cache.headers:public;max_age=60;etag');
+
+        // Izveštaj se pravi u redu poslova: 202, pa provera statusa.
+        Route::post('reports/sales', [ReportController::class, 'store'])
+            ->name('reports.sales');
+        Route::get('reports/{report}', [ReportController::class, 'show'])
+            ->name('reports.show');
     });

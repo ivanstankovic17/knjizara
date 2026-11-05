@@ -4,6 +4,7 @@ use App\Exceptions\ConflictException;
 use App\Http\Middleware\AddResponseTime;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\ForceJsonAccept;
+use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\RequireJsonBody;
 use App\Http\Middleware\SetLocale;
 use App\Http\Problem;
@@ -17,13 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
         $middleware->append(AddResponseTime::class);
         $middleware->api(prepend: [ForceJsonAccept::class, RequireJsonBody::class]);
-        $middleware->alias(['locale' => SetLocale::class]);
+        $middleware->alias([
+            'locale' => SetLocale::class,
+            'idempotent' => Idempotent::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

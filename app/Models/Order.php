@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderStatusChanged;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,5 +37,18 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Menja status i obaveštava kupca (odeljak 10.7).
+     */
+    public function changeStatus(OrderStatus $status): void
+    {
+        if ($this->status === $status) {
+            return;
+        }
+
+        $this->update(['status' => $status]);
+        OrderStatusChanged::dispatch($this);
     }
 }

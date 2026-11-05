@@ -3,6 +3,7 @@
  * stranicama, detalji knjige i korpa. Stanje filtera je u adresi stranice,
  * pa se može podeliti, sačuvati i vratiti dugmetom „nazad”.
  */
+import './echo.js';
 import { api, query } from './api.js';
 import { cart } from './cart.js';
 import { formatAuthors, formatPrice } from './format.js';
@@ -64,6 +65,7 @@ function renderBooks({ data, meta }) {
 
 function renderBook(book) {
     const item = bookTemplate.content.firstElementChild.cloneNode(true);
+    item.dataset.id = book.id;
 
     // textContent, a ne innerHTML: naslov dolazi sa servera i ne sme
     // da se tumači kao HTML (XSS, odeljak 4.6 i glava 13).
@@ -235,6 +237,22 @@ function renderCart() {
 
 $('#otvori-korpu').addEventListener('click', () => cartDialog.showModal());
 document.addEventListener('korpa:promena', renderCart);
+
+// ------------------------------------------------- promene u realnom vremenu
+
+/** Knjiga je rasprodata ili je ponovo na stanju (odeljak 10.6). */
+function updateAvailability({ id, in_stock }) {
+    const item = list.querySelector(`[data-id="${id}"]`);
+    if (!item) return; // knjiga nije na ovoj strani
+
+    item.querySelector('[data-stanje]').textContent = in_stock ? 'Na stanju' : 'Nema na stanju';
+    item.classList.toggle('nema', !in_stock);
+    item.querySelector('[data-u-korpu]').disabled = !in_stock;
+    item.classList.add('promenjeno');
+    setTimeout(() => item.classList.remove('promenjeno'), 2000);
+}
+
+window.Echo?.channel('katalog').listen('.knjiga.dostupnost', updateAvailability);
 
 // ---------------------------------------------------------------- početak
 

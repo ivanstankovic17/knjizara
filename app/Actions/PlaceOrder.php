@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Enums\OrderStatus;
+use App\Events\OrderPlaced;
 use App\Exceptions\OutOfStockException;
 use App\Models\Book;
 use App\Models\Order;
@@ -44,6 +45,9 @@ class PlaceOrder
             }
 
             $order->update(['total' => $total]);
+
+            // Šalje se tek posle potvrde transakcije (ShouldDispatchAfterCommit).
+            OrderPlaced::dispatch($order);
 
             return $order;
         });
