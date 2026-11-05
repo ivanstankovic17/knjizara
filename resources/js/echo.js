@@ -1,6 +1,7 @@
 import Echo from 'laravel-echo';
 
 import Pusher from 'pusher-js';
+import { xsrfToken } from './api.js';
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -11,4 +12,28 @@ window.Echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
+
+    // Dozvola za privatni kanal: zahtev ide sa kolačićem sesije i CSRF
+    // tokenom, a server odgovara potpisom koji proverava Reverb (glava 11).
+    authorizer: (channel) => ({
+        authorize: async (socketId, callback) => {
+            try {
+                const response = await fetch('/broadcasting/auth', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken(),
+                    },
+                    body: JSON.stringify({ socket_id: socketId, channel_name: channel.name }),
+                });
+                if (!response.ok) {
+                    throw new Error(`Pretplata nije dozvoljena (${response.status}).`);
+                }
+                callback(null, await response.json());
+            } catch (error) {
+                callback(error, null);
+            }
+        },
+    }),
 });

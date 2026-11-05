@@ -3,9 +3,12 @@
 namespace App\Providers;
 
 use App\Services\PriceFormatter;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,5 +38,21 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Mejlovi za potvrdu adrese i novu lozinku, na srpskom (glava 11).
+        VerifyEmail::toMailUsing(fn (object $user, string $url) => (new MailMessage)
+            ->subject('Knjižara: potvrdite email adresu')
+            ->greeting("Zdravo, {$user->name}!")
+            ->line('Kliknite na dugme da potvrdite adresu. Posle toga možete da poručujete knjige.')
+            ->action('Potvrdi adresu', $url)
+            ->line('Link važi 60 minuta. Ako niste napravili nalog, zanemarite ovu poruku.'));
+
+        // Link vodi na stranicu klijenta, koja šalje token API-ju.
+        ResetPassword::toMailUsing(fn (object $user, string $token) => (new MailMessage)
+            ->subject('Knjižara: nova lozinka')
+            ->line('Neko je zatražio novu lozinku za vaš nalog.')
+            ->action('Postavi novu lozinku', url('/lozinka/nova')
+                .'?'.http_build_query(['token' => $token, 'email' => $user->email]))
+            ->line('Link važi 60 minuta. Ako niste vi tražili novu lozinku, zanemarite ovu poruku.'));
     }
 }

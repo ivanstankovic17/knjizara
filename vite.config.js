@@ -9,6 +9,8 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/catalog.js',
                 'resources/js/new-book.js',
+                'resources/js/login.js',
+                'resources/js/account.js',
             ],
             refresh: true,
         }),

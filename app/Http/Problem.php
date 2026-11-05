@@ -49,7 +49,7 @@ final class Problem
             $e instanceof AuthenticationException => [
                 'status' => 401,
                 'title' => 'Potrebna je prijava',
-                'detail' => 'Zahtev nema ispravan token za pristup.',
+                'detail' => 'Zahtev nema ni ispravnu sesiju ni ispravan token za pristup.',
             ],
             $e instanceof HttpExceptionInterface => [
                 'status' => $e->getStatusCode(),
@@ -110,12 +110,16 @@ final class Problem
                 $request->method(), $e->getHeaders()['Allow'] ?? '-'),
             429 => sprintf('Previše zahteva. Pokušajte ponovo za %s s.',
                 $e->getHeaders()['Retry-After'] ?? '60'),
+            419 => 'CSRF token nedostaje ili je istekao. Osvežite stranicu i pokušajte ponovo.',
             default => $e->getMessage() ?: self::statusTitle($e->getStatusCode()),
         };
     }
 
     private static function statusTitle(int $status): string
     {
-        return Response::$statusTexts[$status] ?? 'Error';
+        // 419 nije standardan HTTP status, nego Laravelov (odeljak 2.3).
+        return $status === 419
+            ? 'Page Expired'
+            : (Response::$statusTexts[$status] ?? 'Error');
     }
 }

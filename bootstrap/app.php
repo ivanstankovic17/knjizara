@@ -3,6 +3,7 @@
 use App\Exceptions\ConflictException;
 use App\Http\Middleware\AddResponseTime;
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\ForceJsonAccept;
 use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\RequireJsonBody;
@@ -25,9 +26,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(AssignRequestId::class);
         $middleware->append(AddResponseTime::class);
         $middleware->api(prepend: [ForceJsonAccept::class, RequireJsonBody::class]);
+
+        // Zahtevi sa stranica knjižare (isti domen) dobijaju sesiju i CSRF
+        // zaštitu i na API rutama; ostali klijenti koriste tokene (glava 11).
+        $middleware->statefulApi();
+
         $middleware->alias([
             'locale' => SetLocale::class,
             'idempotent' => Idempotent::class,
+            'verified.api' => EnsureEmailVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

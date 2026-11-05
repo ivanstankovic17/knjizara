@@ -58,7 +58,13 @@
         <h2>Korpa</h2>
         <ul></ul>
         <p>Ukupno: <strong data-ukupno></strong></p>
-        <p class="napomena">Poručivanje je dostupno posle prijave (glava 11).</p>
+        @auth
+            <button type="button" id="poruci">Poruči</button>
+        @else
+            <p class="napomena"><a href="{{ route('login', ['nazad' => '/katalog']) }}">Prijavite se</a>
+                da biste poručili.</p>
+        @endauth
+        <p class="status" data-porudzbina role="status" aria-live="polite"></p>
         <form method="dialog"><button>Zatvori</button></form>
     </dialog>
 </x-shop>

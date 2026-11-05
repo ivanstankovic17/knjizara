@@ -8,7 +8,7 @@
     <title>{{ $title }} · {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', $script])
 </head>
-<body>
+<body data-prijavljen="{{ auth()->check() ? '1' : '0' }}" data-korisnik="{{ auth()->id() }}">
     <header class="zaglavlje">
         <a href="{{ route('catalog') }}" class="logo">Knjižara</a>
         <nav>
@@ -18,6 +18,12 @@
             @endif
         </nav>
         {{ $actions ?? '' }}
+        {{-- Stranice su web rute, pa server zna ko je prijavljen (sesija). --}}
+        @auth
+            <a href="{{ route('account') }}" class="korisnik">{{ auth()->user()->name }}</a>
+        @else
+            <a href="{{ route('login') }}">Prijava</a>
+        @endauth
     </header>
 
     <main>

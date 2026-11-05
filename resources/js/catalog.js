@@ -235,8 +235,42 @@ function renderCart() {
     cartDialog.querySelector('[data-ukupno]').textContent = formatPrice(cart.total());
 }
 
-$('#otvori-korpu').addEventListener('click', () => cartDialog.showModal());
+// Jedan ključ idempotentnosti po nameri da se poruči: ako se zahtev
+// ponovi posle pucanja veze, server neće napraviti drugu porudžbinu.
+let idempotencyKey = null;
+
+$('#otvori-korpu').addEventListener('click', () => {
+    idempotencyKey = crypto.randomUUID();
+    cartDialog.querySelector('[data-porudzbina]').textContent = '';
+    cartDialog.showModal();
+});
 document.addEventListener('korpa:promena', renderCart);
+
+$('#poruci')?.addEventListener('click', async (e) => {
+    const status = cartDialog.querySelector('[data-porudzbina]');
+    const items = cart.items().map((i) => ({ book_id: i.id, quantity: i.quantity }));
+    if (items.length === 0) {
+        status.textContent = 'Korpa je prazna.';
+        return;
+    }
+
+    e.target.disabled = true;
+    try {
+        const { data: order } = await api('/orders', {
+            method: 'POST',
+            body: { items },
+            headers: { 'Idempotency-Key': idempotencyKey },
+        });
+        cart.clear();
+        status.textContent = `Porudžbina ${order.id} je primljena. Ukupno ${formatPrice(order.total)}.`;
+        idempotencyKey = crypto.randomUUID(); // sledeća porudžbina je nova namera
+    } catch (error) {
+        // 409: nema na stanju; 403: email nije potvrđen; 422: neispravna korpa
+        status.textContent = error.message;
+    } finally {
+        e.target.disabled = false;
+    }
+});
 
 // ------------------------------------------------- promene u realnom vremenu
 

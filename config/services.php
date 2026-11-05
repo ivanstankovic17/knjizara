@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Prijava preko GitHub-a (odeljak 11.6). Ključevi se dobijaju
+    // registracijom OAuth aplikacije na github.com/settings/developers.
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('APP_URL').'/auth/github/callback',
+    ],
+
 ];

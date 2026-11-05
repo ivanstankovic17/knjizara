@@ -236,6 +236,49 @@ dd {
     color: white;
 }
 
-#rezultat {
+#rezultat,
+.uspeh {
     color: var(--uspeh);
+}
+
+/* Nalog (glava 11) */
+
+.kolone {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.kolone h2 {
+    margin-top: 0;
+}
+
+.zaglavlje .korisnik {
+    font-weight: 600;
+}
+
+.porudzbine {
+    padding: 0;
+    list-style: none;
+}
+
+.porudzbine li {
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 0.5rem;
+}
+
+.porudzbine li.promenjeno {
+    box-shadow: 0 0 0 3px var(--boja);
+}
+
+[data-status='cancelled'] {
+    color: var(--siva);
+}
+
+[data-status='shipped'] {
+    color: var(--uspeh);
+    font-weight: 600;
 }

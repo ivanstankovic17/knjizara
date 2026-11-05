@@ -18,13 +18,26 @@ export class ApiError extends Error {
 }
 
 /**
- * @param {string} path  putanja posle /api/v1, na primer '/books?page=2'
- * @param {{method?: string, body?: unknown, signal?: AbortSignal, timeout?: number}} options
+ * CSRF token iz kolačića XSRF-TOKEN, koji Laravel postavlja uz svaku
+ * stranicu; šalje se nazad u zaglavlju X-XSRF-TOKEN (odeljak 11.2).
  */
-export async function api(path, { method = 'GET', body, signal, timeout = 10_000 } = {}) {
-    const headers = { Accept: 'application/json' };
+export function xsrfToken() {
+    const cookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='));
+    return cookie ? decodeURIComponent(cookie.slice('XSRF-TOKEN='.length)) : '';
+}
+
+/**
+ * @param {string} path  putanja posle /api/v1, na primer '/books?page=2'
+ * @param {{method?: string, body?: unknown, signal?: AbortSignal, timeout?: number,
+ *          headers?: Record<string, string>}} options
+ */
+export async function api(path, { method = 'GET', body, signal, timeout = 10_000, headers: extra = {} } = {}) {
+    const headers = { Accept: 'application/json', ...extra };
     if (body !== undefined) {
         headers['Content-Type'] = 'application/json';
+    }
+    if (method !== 'GET') {
+        headers['X-XSRF-TOKEN'] = xsrfToken();
     }
 
     const signals = [AbortSignal.timeout(timeout)];

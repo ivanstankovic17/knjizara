@@ -35,6 +35,8 @@ export const cart = {
         write(items);
     },
 
+    clear: () => write({}),
+
     count: () => cart.items().reduce((sum, i) => sum + i.quantity, 0),
 
     total: () => cart.items().reduce((sum, i) => sum + i.price * i.quantity, 0),

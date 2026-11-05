@@ -64,6 +64,15 @@ return [
         'string' => 'Polje :attribute mora imati najmanje :min znakova.',
     ],
     'not_in' => 'Izabrana vrednost polja :attribute nije dozvoljena.',
+    'current_password' => 'Lozinka nije ispravna.',
+    'lowercase' => 'Polje :attribute mora biti napisano malim slovima.',
+    'password' => [
+        'letters' => 'Lozinka mora sadržati bar jedno slovo.',
+        'mixed' => 'Lozinka mora sadržati bar jedno veliko i jedno malo slovo.',
+        'numbers' => 'Lozinka mora sadržati bar jednu cifru.',
+        'symbols' => 'Lozinka mora sadržati bar jedan znak koji nije slovo ni cifra.',
+        'uncompromised' => 'Ova lozinka se pojavila u objavljenim spiskovima ukradenih lozinki. Izaberite drugu.',
+    ],
     'numeric' => 'Polje :attribute mora biti broj.',
     'present' => 'Polje :attribute mora postojati.',
     'prohibited' => 'Polje :attribute nije dozvoljeno.',
@@ -103,6 +112,14 @@ return [
      * Imena polja u porukama: "Polje cena je obavezno.", a ne "price".
      */
     'attributes' => [
+        'name' => 'ime',
+        'email' => 'email adresa',
+        'password' => 'lozinka',
+        'code' => 'kod',
+        'device_name' => 'naziv uređaja',
+        'items' => 'stavke',
+        'items.*.book_id' => 'knjiga',
+        'items.*.quantity' => 'količina',
         'title' => 'naslov',
         'isbn' => 'ISBN',
         'description' => 'opis',
