@@ -35,7 +35,8 @@ class GenerateSalesReport implements ShouldQueue
             ->orderByDesc('revenue')
             ->select('categories.name as category')
             ->selectRaw('sum(order_items.quantity) as copies')
-            ->selectRaw('sum(order_items.quantity * order_items.unit_price) as revenue')
+            ->selectRaw('sum(order_items.quantity * order_items.unit_price)'
+                .' as revenue')
             ->get();
 
         $this->report->update([

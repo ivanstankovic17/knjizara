@@ -25,7 +25,8 @@ class Idempotent
             return $next($request);
         }
         if (! preg_match('/^[A-Za-z0-9-]{8,64}$/', $key)) {
-            throw new BadRequestHttpException('Zaglavlje Idempotency-Key nije ispravno.');
+            throw new BadRequestHttpException(
+                'Zaglavlje Idempotency-Key nije ispravno.');
         }
 
         $client = $request->user()?->id ?? $request->ip();
@@ -35,7 +36,8 @@ class Idempotent
         // Dva ista zahteva u istom trenutku: drugi čeka da prvi završi.
         $lock = Cache::lock("{$cacheKey}:lock", 10);
         if (! $lock->block(5)) {
-            throw new ConflictHttpException('Zahtev sa istim ključem se još obrađuje.');
+            throw new ConflictHttpException(
+                'Zahtev sa istim ključem se još obrađuje.');
         }
 
         try {
