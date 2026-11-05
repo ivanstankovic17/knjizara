@@ -16,6 +16,11 @@ body {
     background: var(--pozadina);
 }
 
+/* Atribut hidden mora da sakrije element i kada CSS zadaje display. */
+[hidden] {
+    display: none !important;
+}
+
 .zaglavlje {
     display: flex;
     gap: 1.5rem;
