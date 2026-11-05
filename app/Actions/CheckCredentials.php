@@ -61,6 +61,12 @@ class CheckCredentials
 
         RateLimiter::clear($key);
 
+        // Heš sa starom cenom (BCRYPT_ROUNDS) se zamenjuje novim, sada
+        // kada je lozinka poznata.
+        if (Hash::needsRehash($user->password)) {
+            $user->forceFill(['password' => $data['password']])->save();
+        }
+
         return $user;
     }
 
