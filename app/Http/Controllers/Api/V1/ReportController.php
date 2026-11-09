@@ -16,9 +16,6 @@ class ReportController extends Controller
      */
     public function store(): JsonResponse
     {
-        abort_unless(app()->isLocal(), 403,
-            'Izveštaji su za sada dostupni samo lokalno.');
-
         $report = Report::create(['type' => 'sales']);
         GenerateSalesReport::dispatch($report);
 

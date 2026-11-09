@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\Order;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -102,6 +103,16 @@ final class Problem
             $name = self::MODELS[$previous->getModel()] ?? 'Resurs';
 
             return sprintf('%s %s ne postoji.', $name, implode(', ', $previous->getIds()));
+        }
+
+        // Odbijanje iz Policy-ja (403, ili 404 sa denyAsNotFound): poruka je
+        // napisana za klijenta, pa se prenosi kakva jeste (odeljak 12.5).
+        // Policy koji vrati samo false daje Laravelovu englesku poruku.
+        if ($previous instanceof AuthorizationException) {
+            $message = $previous->getMessage();
+
+            return in_array($message, ['', 'This action is unauthorized.'], true)
+                ? 'Nemate dozvolu za ovu akciju.' : $message;
         }
 
         return match ($e->getStatusCode()) {

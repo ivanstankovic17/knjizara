@@ -11,10 +11,11 @@ use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 /**
- * Porudžbine prijavljenog kupca. Svaki upit ide preko $user->orders(),
- * pa tuđa porudžbina za kupca jednostavno ne postoji (404, odeljak 6.4).
+ * Porudžbine prijavljenog kupca. Spisak je uvek ograničen na sopstvene
+ * porudžbine; pojedinačnu porudžbinu proverava OrderPolicy (glava 12).
  */
 class OrderController extends Controller
 {
@@ -45,25 +46,23 @@ class OrderController extends Controller
     }
 
     /**
-     * GET /api/v1/orders/{id}
+     * GET /api/v1/orders/{order}: vlasnik ili menadžer; ostali dobijaju 404.
      */
-    public function show(Request $request, int $order): OrderResource
+    public function show(Order $order): OrderResource
     {
-        return new OrderResource($this->find($request, $order)->load('items.book'));
+        Gate::authorize('view', $order);
+
+        // Kupac se učitava uvek, a OrderResource ga prikazuje samo menadžeru.
+        return new OrderResource($order->load('user', 'items.book'));
     }
 
     /**
-     * POST /api/v1/orders/{id}/cancel: 200 ili 409.
+     * POST /api/v1/orders/{order}/cancel: 200 ili 409.
      */
-    public function cancel(Request $request, int $order, CancelOrder $cancelOrder): OrderResource
+    public function cancel(Order $order, CancelOrder $cancelOrder): OrderResource
     {
-        $cancelled = $cancelOrder->handle($this->find($request, $order));
+        Gate::authorize('cancel', $order);
 
-        return new OrderResource($cancelled->load('items.book'));
-    }
-
-    private function find(Request $request, int $id): Order
-    {
-        return $request->user()->orders()->findOrFail($id);
+        return new OrderResource($cancelOrder->handle($order)->load('user', 'items.book'));
     }
 }

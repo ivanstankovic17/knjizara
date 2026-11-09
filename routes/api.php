@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AuthorBookController;
 use App\Http\Controllers\Api\V1\AuthorController;
@@ -11,6 +13,7 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TokenController;
 use App\Http\Controllers\Api\V1\TwoFactorController;
 use App\Http\Controllers\StatusController;
+use App\Models\Book;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', StatusController::class)
@@ -22,11 +25,22 @@ Route::prefix('v1')
     ->middleware('throttle:api')
     ->group(function () {
         Route::apiResource('books', BookController::class)
-            ->only(['index', 'store', 'show', 'destroy'])
-            ->middlewareFor('store', 'idempotent');
-        // Samo PATCH, bez PUT (odeljak 6.3).
-        Route::patch('books/{book}', [BookController::class, 'update'])
-            ->name('books.update');
+            ->only(['index', 'show']);
+
+        // Izmene kataloga: prvo prijava (401), pa dozvola iz BookPolicy (403).
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('books', [BookController::class, 'store'])
+                ->can('create', Book::class)
+                ->middleware('idempotent')
+                ->name('books.store');
+            // Samo PATCH, bez PUT (odeljak 6.3).
+            Route::patch('books/{book}', [BookController::class, 'update'])
+                ->can('update', 'book')
+                ->name('books.update');
+            Route::delete('books/{book}', [BookController::class, 'destroy'])
+                ->can('delete', 'book')
+                ->name('books.destroy');
+        });
 
         Route::apiResource('authors', AuthorController::class)
             ->only(['index', 'show']);
@@ -39,10 +53,13 @@ Route::prefix('v1')
             ->middleware('cache.headers:public;max_age=60;etag');
 
         // Izveštaj se pravi u redu poslova: 202, pa provera statusa.
-        Route::post('reports/sales', [ReportController::class, 'store'])
-            ->name('reports.sales');
-        Route::get('reports/{report}', [ReportController::class, 'show'])
-            ->name('reports.show');
+        // Dozvola bez modela: Gate reports.view (odeljak 12.2).
+        Route::middleware(['auth:sanctum', 'can:reports.view'])->group(function () {
+            Route::post('reports/sales', [ReportController::class, 'store'])
+                ->name('reports.sales');
+            Route::get('reports/{report}', [ReportController::class, 'show'])
+                ->name('reports.show');
+        });
 
         // Nalozi i prijava (glava 11).
         Route::prefix('auth')->name('auth.')->group(function () {
@@ -74,7 +91,8 @@ Route::prefix('v1')
         Route::delete('tokens/current', [TokenController::class, 'destroy'])
             ->middleware('auth:sanctum')->name('tokens.destroy');
 
-        // Porudžbine: samo prijavljeni kupac, i samo svoje.
+        // Porudžbine: spisak je uvek sopstveni; pojedinačnu porudžbinu
+        // proverava OrderPolicy u kontroleru (vlasnik ili menadžer).
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
             Route::post('orders', [OrderController::class, 'store'])
@@ -83,5 +101,21 @@ Route::prefix('v1')
                 ->whereNumber('order')->name('orders.show');
             Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])
                 ->whereNumber('order')->name('orders.cancel');
+        });
+
+        // Upravljanje (glava 12): cela grupa traži dozvolu, pa kontroleri
+        // ne moraju da je proveravaju.
+        Route::prefix('admin')->name('admin.')->middleware('auth:sanctum')->group(function () {
+            Route::middleware('can:orders.manage')->group(function () {
+                Route::get('orders', [AdminOrderController::class, 'index'])
+                    ->name('orders.index');
+                Route::patch('orders/{order}', [AdminOrderController::class, 'update'])
+                    ->whereNumber('order')->name('orders.update');
+            });
+            Route::middleware('can:users.manage')->group(function () {
+                Route::get('users', [UserController::class, 'index'])->name('users.index');
+                Route::patch('users/{user}', [UserController::class, 'update'])
+                    ->whereNumber('user')->name('users.update');
+            });
         });
     });

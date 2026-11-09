@@ -20,6 +20,14 @@ Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6). Ugovor važi za katalog i 
 | `GET /orders` | kupac | `200`, stranica *sopstvenih* porudžbina | `401` |
 | `GET /orders/{id}` | vlasnik, menadžer | `200`, porudžbina sa stavkama | `401`, `404` |
 | `POST /orders/{id}/cancel` | vlasnik, menadžer | `200`, otkazana porudžbina | `401`, `404`, `409` (nije `pending`) |
+| `POST /reports/sales` | menadžer | `202` + `Location` | `401`, `403` |
+| `GET /reports/{id}` | menadžer | `200`, status izveštaja | `401`, `403`, `404` |
+| `GET /admin/orders` | menadžer | `200`, stranica svih porudžbina, sa kupcem; filter `status` | `401`, `403`, `422` |
+| `PATCH /admin/orders/{id}` | menadžer | `200`, porudžbina sa novim statusom (`paid`, `shipped`) | `401`, `403`, `404`, `409` (nedozvoljen prelaz), `422` |
+| `GET /admin/users` | administrator | `200`, stranica korisnika; filter `role` | `401`, `403`, `422` |
+| `PATCH /admin/users/{id}` | administrator | `200`, korisnik sa novom ulogom | `401`, `403` (sopstvena uloga), `404`, `422` |
+
+Uloge i dozvole (glava 12): menadžer ima `catalog.manage`, `orders.manage` i `reports.view`, a administrator i `users.manage`. Prijavljenom korisniku resursi vraćaju i polje `can` sa akcijama koje sme da izvede, na primer `"can": {"update": true, "delete": true}` za knjigu ili `"can": {"cancel": false}` za porudžbinu. Porudžbina za menadžera ima i polje `customer`.
 
 Kategorije nemaju paginaciju, jer ih je malo, a klijent ih prikazuje sve odjednom u meniju. Zato mogu dugo da se keširaju. Autori i knjige autora imaju istu paginaciju kao knjige. Kupac koji traži tuđu porudžbinu dobija `404`, kao da porudžbina ne postoji. Nedostatak knjiga na stanju je `409`, a ne `422`. Zahtev je ispravan i mogao bi da uspe kada knjiga ponovo bude na stanju.
 

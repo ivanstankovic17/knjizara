@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Permission;
 use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -51,6 +52,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === Role::Admin;
+    }
+
+    /**
+     * Uloga se čita iz baze pri svakom zahtevu, pa promena uloge važi
+     * odmah, i za sesiju i za već izdate tokene (odeljak 12.3).
+     */
+    public function hasPermission(Permission $permission): bool
+    {
+        return in_array($permission, $this->role->permissions(), true);
     }
 
     public function hasTwoFactor(): bool

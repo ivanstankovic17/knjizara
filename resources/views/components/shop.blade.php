@@ -13,9 +13,13 @@
         <a href="{{ route('catalog') }}" class="logo">Knjižara</a>
         <nav>
             <a href="{{ route('catalog') }}">Katalog</a>
-            @if (app()->isLocal())
+            {{-- Meni prati dozvole; pravu proveru i dalje radi server. --}}
+            @can('create', App\Models\Book::class)
                 <a href="{{ route('books.create') }}">Nova knjiga</a>
-            @endif
+            @endcan
+            @can('orders.manage')
+                <a href="{{ route('admin.orders') }}">Porudžbine</a>
+            @endcan
         </nav>
         {{ $actions ?? '' }}
         {{-- Stranice su web rute, pa server zna ko je prijavljen (sesija). --}}

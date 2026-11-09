@@ -70,9 +70,6 @@ class BookController extends Controller
      */
     public function destroy(Book $book): Response
     {
-        abort_unless(app()->isLocal(), 403,
-            'Katalog za sada može da se menja samo lokalno.');
-
         $orders = $book->orderItems()->distinct()->count('order_id');
         if ($orders > 0) {
             throw new BookInOrdersException($book, $orders);

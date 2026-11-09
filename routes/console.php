@@ -14,7 +14,8 @@ Artisan::command('knjizara:cena {iznos}', function (PriceFormatter $prices, int 
     $this->info($prices->format($iznos));
 })->purpose('Prikazuje iznos u formatu knjižare');
 
-// Dok menadžer ne dobije API za porudžbine (glava 12), status se menja ovde.
+// Promena statusa iz konzole (glava 10). Od glave 12 menadžer to radi
+// i preko API-ja: PATCH /api/v1/admin/orders/{id}.
 Artisan::command('knjizara:status {porudzbina} {status}', function (int $porudzbina, string $status) {
     $order = Order::findOrFail($porudzbina);
     $new = OrderStatus::tryFrom($status)

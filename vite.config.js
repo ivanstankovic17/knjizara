@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/new-book.js',
                 'resources/js/login.js',
                 'resources/js/account.js',
+                'resources/js/admin-orders.js',
             ],
             refresh: true,
         }),

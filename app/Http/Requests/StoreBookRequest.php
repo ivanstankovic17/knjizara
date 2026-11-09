@@ -9,12 +9,12 @@ use Illuminate\Validation\Rule;
 class StoreBookRequest extends FormRequest
 {
     /**
-     * Privremeno: dok ne uvedemo prijavu (glava 11) i uloge (glava 12),
-     * katalog sme da se menja samo na razvojnom računaru.
+     * Dozvolu proverava ruta (->can('create', Book::class)) pre nego što
+     * zahtev stigne ovde, pa Form Request proverava samo podatke.
      */
     public function authorize(): bool
     {
-        return app()->isLocal();
+        return true;
     }
 
     /**

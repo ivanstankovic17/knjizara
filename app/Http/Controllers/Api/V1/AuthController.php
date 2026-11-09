@@ -34,8 +34,12 @@ class AuthController extends Controller
         // Listener iz Laravela šalje mejl sa linkom za potvrdu adrese.
         event(new Registered($user));
 
-        Auth::guard('web')->login($user);
-        $request->session()->regenerate();
+        // Sesija postoji samo za zahteve sa stranica knjižare (statefulApi).
+        // Ostali klijenti se posle registracije prijavljuju sa POST /tokens.
+        if ($request->hasSession()) {
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+        }
 
         return (new UserResource($user->fresh()))->response()->setStatusCode(201);
     }
@@ -45,6 +49,9 @@ class AuthController extends Controller
      */
     public function login(Request $request, CheckCredentials $credentials): UserResource
     {
+        abort_unless($request->hasSession(), 400,
+            'Prijava sesijom radi samo sa stranica knjižare. Ostali klijenti koriste POST /api/v1/tokens.');
+
         $user = $credentials->handle($request);
 
         Auth::guard('web')->login($user, $request->boolean('remember'));
@@ -61,6 +68,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request): Response
     {
+        // Klijent sa tokenom nema sesiju; on se odjavljuje sa DELETE /tokens/current.
+        abort_unless($request->hasSession(), 400,
+            'Odjava sesijom radi samo sa stranica knjižare. Token se opoziva sa DELETE /api/v1/tokens/current.');
+
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

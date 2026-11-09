@@ -9,7 +9,13 @@ Route::get('/', HomeController::class)->name('home');
 
 // Stranice JavaScript klijenta; podatke dobijaju od API-ja (glava 9).
 Route::view('/katalog', 'catalog')->name('catalog');
-Route::view('/katalog/nova-knjiga', 'new-book')->name('books.create');
+
+// Stranice za upravljanje (glava 12): neprijavljen korisnik ide na
+// /prijava, a prijavljen bez dozvole dobija 403.
+Route::view('/katalog/nova-knjiga', 'new-book')
+    ->middleware(['auth', 'can:create,App\Models\Book'])->name('books.create');
+Route::view('/upravljanje/porudzbine', 'admin-orders')
+    ->middleware(['auth', 'can:orders.manage'])->name('admin.orders');
 
 // Nalog (glava 11). Ime "login" traži Laravelov middleware "auth".
 Route::view('/prijava', 'login')->name('login');

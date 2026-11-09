@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Ana Petrović',
             'email' => 'ana@knjizara.test',
         ]);
+        User::factory()->manager()->create([
+            'name' => 'Marko Jovanović',
+            'email' => 'marko@knjizara.test',
+        ]);
         User::factory(10)->create();
 
         $authors = Author::factory(20)->create();

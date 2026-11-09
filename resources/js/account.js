@@ -32,7 +32,8 @@ function renderOrder(order) {
 
     li.append(title, ' · ', status, ' · ', total);
 
-    if (order.links.cancel) {
+    // Server kaže da li ovaj korisnik sme da otkaže porudžbinu (glava 12).
+    if (order.can.cancel) {
         const cancel = Object.assign(document.createElement('button'), {
             type: 'button',
             textContent: 'Otkaži',
@@ -70,7 +71,8 @@ function onStatusChanged({ id, status, total }) {
     const li = $(`#porudzbine [data-id="${id}"]`);
     const updated = renderOrder({
         id, status, total,
-        links: { cancel: status === 'pending' ? true : undefined },
+        // Poruka sa kanala nema polje can; vlasnik sme da otkaže dok čeka.
+        can: { cancel: status === 'pending' },
     });
     updated.classList.add('promenjeno');
     li ? li.replaceWith(updated) : $('#porudzbine').prepend(updated);
