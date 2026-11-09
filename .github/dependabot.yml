@@ -1,0 +1,12 @@
+# Dependabot svake nedelje proverava zavisnosti i otvara pull request
+# za ranjive ili zastarele pakete (odeljak 13.8).
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly

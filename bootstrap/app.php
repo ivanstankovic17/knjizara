@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\ForceJsonAccept;
 use App\Http\Middleware\Idempotent;
 use App\Http\Middleware\RequireJsonBody;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Problem;
 use Illuminate\Foundation\Application;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
         $middleware->append(AddResponseTime::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->api(prepend: [ForceJsonAccept::class, RequireJsonBody::class]);
 
         // Zahtevi sa stranica knjižare (isti domen) dobijaju sesiju i CSRF

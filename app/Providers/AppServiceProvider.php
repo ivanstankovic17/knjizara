@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
         // Lenjo učitavanje, tiho odbačeni i nepostojeći atributi
         // bacaju izuzetak, ali samo van produkcije.
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        // Na produkciji sve adrese koje aplikacija pravi počinju sa https://
+        // (linkovi u mejlovima, Location, preusmerenja; odeljak 13.6).
+        URL::forceHttps($this->app->isProduction());
 
         // Svaka dozvola je i Gate istog imena: Gate::allows('reports.view'),
         // middleware can:reports.view, @can('reports.view') (odeljak 12.2).
