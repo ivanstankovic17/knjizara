@@ -1,0 +1,41 @@
+meta {
+  name: Nova porudzbina
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "items": [{ "book_id": {{bookId}}, "quantity": 1 }]
+  }
+}
+
+script:post-response {
+  bru.setVar("orderId", res.body.data.id);
+}
+
+tests {
+  test("201 sa zaglavljem Location", function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers.location).to.equal(res.body.data.links.self);
+  });
+
+  test("porudžbina čeka i može da se otkaže", function () {
+    expect(res.body.data.status).to.equal("pending");
+    expect(res.body.data.can.cancel).to.be.true;
+  });
+}

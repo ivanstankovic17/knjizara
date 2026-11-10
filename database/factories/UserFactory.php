@@ -36,6 +36,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Kupac; isto što i podrazumevano stanje, ali čitljivije u testovima.
+     */
+    public function customer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => Role::Customer,
+        ]);
+    }
+
+    /**
      * Korisnik sa ulogom administratora.
      */
     public function admin(): static

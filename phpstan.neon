@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+        - database/
+
+    # 0 je najblaži nivo, 10 najstroži (odeljak 14.8).
+    level: 5
+
+    # Tipove kolona čita iz migracija, a cast-ove iz metode casts().
+    parseModelCastsMethod: true

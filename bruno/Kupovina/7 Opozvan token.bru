@@ -1,0 +1,25 @@
+meta {
+  name: Opozvan token
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/orders
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("opozvan token više ne važi", function () {
+    expect(res.status).to.equal(401);
+  });
+}

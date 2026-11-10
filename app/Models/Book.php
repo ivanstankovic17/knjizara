@@ -35,7 +35,7 @@ class Book extends Model
     protected static function booted(): void
     {
         static::creating(function (Book $book) {
-            while ($book->slug === null
+            while (blank($book->slug)
             || static::where('slug', $book->slug)->exists()) {
                 $book->slug = Str::slug($book->title).'-'.random_int(1000, 9999);
             }
@@ -67,11 +67,13 @@ class Book extends Model
         ];
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /** @return BelongsToMany<Author, $this> */
     public function authors(): BelongsToMany
     {
         return $this->belongsToMany(Author::class)
@@ -79,6 +81,7 @@ class Book extends Model
             ->orderByPivot('position');
     }
 
+    /** @return HasMany<OrderItem, $this> */
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);

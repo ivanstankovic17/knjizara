@@ -97,7 +97,7 @@ final class Problem
      */
     private static function httpDetail(HttpExceptionInterface $e, Request $request): string
     {
-        $previous = $e instanceof Throwable ? $e->getPrevious() : null;
+        $previous = $e->getPrevious();
 
         if ($previous instanceof ModelNotFoundException) {
             $name = self::MODELS[$previous->getModel()] ?? 'Resurs';

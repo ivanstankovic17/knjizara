@@ -39,7 +39,7 @@ class CheckCredentials
 
         // I za nepostojeći nalog računa se heš, da se po vremenu odgovora
         // ne bi moglo zaključiti koji emailovi imaju nalog.
-        $valid = Hash::check($data['password'], $user?->password ?? self::dummyHash());
+        $valid = Hash::check($data['password'], $user->password ?? self::dummyHash());
         if (! $user || ! $valid) {
             RateLimiter::hit($key);
             throw ValidationException::withMessages([

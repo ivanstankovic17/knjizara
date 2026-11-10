@@ -83,7 +83,10 @@ class BookController extends Controller
     /**
      * [7, 12] => [7 => ['position' => 1], 12 => ['position' => 2]]
      *
-     * @param  list<int>  $authorIds
+     * Ključevi ne moraju biti 0, 1, 2...: i JSON objekat {"3": 7, "5": 12}
+     * prolazi pravilo "array", pa se redosled pravi sa array_values.
+     *
+     * @param  array<array-key, int>  $authorIds
      * @return array<int, array{position: int}>
      */
     private static function positions(array $authorIds): array

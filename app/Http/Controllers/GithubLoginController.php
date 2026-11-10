@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
 /**
  * Prijava preko GitHub-a (OAuth 2.0, odeljak 11.6).
@@ -17,9 +18,10 @@ class GithubLoginController extends Controller
     /**
      * GET /auth/github: preusmerenje na GitHub, sa nasumičnim "state".
      */
-    public function redirect(): RedirectResponse
+    public function redirect(): SymfonyRedirectResponse
     {
-        return Socialite::driver('github')->scopes(['user:email'])->redirect();
+        // GitHub provajder podrazumevano traži opseg user:email.
+        return Socialite::driver('github')->redirect();
     }
 
     /**

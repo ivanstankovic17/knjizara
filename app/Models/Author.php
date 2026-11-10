@@ -14,6 +14,7 @@ class Author extends Model
     /** @use HasFactory<AuthorFactory> */
     use HasFactory;
 
+    /** @return BelongsToMany<Book, $this> */
     public function books(): BelongsToMany
     {
         return $this->belongsToMany(Book::class)

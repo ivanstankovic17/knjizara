@@ -1,0 +1,27 @@
+meta {
+  name: Ponovno otkazivanje
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/orders/{{orderId}}/cancel
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("409 u obliku problem+json", function () {
+    expect(res.status).to.equal(409);
+    expect(res.headers["content-type"]).to.equal("application/problem+json");
+    expect(res.body.status).to.equal(409);
+  });
+}

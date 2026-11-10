@@ -29,7 +29,7 @@ class Idempotent
                 'Zaglavlje Idempotency-Key nije ispravno.');
         }
 
-        $client = $request->user()?->id ?? $request->ip();
+        $client = $request->user()->id ?? $request->ip();
         $cacheKey = 'idempotency:'.sha1("{$client} {$request->method()} {$request->path()} {$key}");
         $fingerprint = sha1($request->getContent());
 

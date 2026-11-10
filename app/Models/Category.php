@@ -26,6 +26,7 @@ class Category extends Model
         static::deleted(fn () => Cache::forget(self::CACHE_KEY));
     }
 
+    /** @return HasMany<Book, $this> */
     public function books(): HasMany
     {
         return $this->hasMany(Book::class);
