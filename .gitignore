@@ -30,3 +30,4 @@ Thumbs.db
 /playwright-report
 /public/docs
 /docker/nginx/certs
+/.env.docker

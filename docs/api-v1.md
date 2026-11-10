@@ -14,8 +14,14 @@ Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6), dopunjen nalozima i prijav
 | `GET /authors` | svi | `200`, stranica autora | `422` |
 | `GET /authors/{id}` | svi | `200`, autor | `404` |
 | `GET /authors/{id}/books` | svi | `200`, stranica knjiga autora | `404`, `422` |
+| `POST /authors` | menadžer | `201` + `Location` | `401`, `403`, `422` |
+| `PATCH /authors/{id}` | menadžer | `200`, izmenjen autor | `401`, `403`, `404`, `422` |
+| `DELETE /authors/{id}` | menadžer | `204` | `401`, `403`, `404`, `409` (ima knjige) |
 | `GET /categories` | svi | `200` + `ETag`, sve kategorije, bez paginacije | `304` za uslovni zahtev |
 | `GET /categories/{slug}` | svi | `200` + `ETag`, kategorija | `304` za uslovni zahtev, `404` |
+| `POST /categories` | menadžer | `201` + `Location`; slug se pravi od imena | `401`, `403`, `422` |
+| `PATCH /categories/{slug}` | menadžer | `200`, novo ime; slug se ne menja | `401`, `403`, `404`, `422` |
+| `DELETE /categories/{slug}` | menadžer | `204` | `401`, `403`, `404`, `409` (ima knjige) |
 | `POST /orders` | kupac | `201` + `Location` | `401`, `409` (nema na stanju), `422` |
 | `GET /orders` | kupac | `200`, stranica *sopstvenih* porudžbina | `401` |
 | `GET /orders/{id}` | vlasnik, menadžer | `200`, porudžbina sa stavkama | `401`, `404` |

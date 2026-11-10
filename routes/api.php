@@ -52,6 +52,23 @@ Route::prefix('v1')
             ->parameters(['categories' => 'category:slug'])
             ->middleware('cache.headers:public;max_age=60;etag');
 
+        // Autori i kategorije: menadžer ih održava (zahtev Z-7, odeljak 17.1).
+        // Kao kod knjiga, samo PATCH, bez PUT (odeljak 6.3).
+        Route::middleware(['auth:sanctum', 'can:catalog.manage'])->group(function () {
+            Route::post('authors', [AuthorController::class, 'store'])
+                ->name('authors.store');
+            Route::patch('authors/{author}', [AuthorController::class, 'update'])
+                ->name('authors.update');
+            Route::delete('authors/{author}', [AuthorController::class, 'destroy'])
+                ->name('authors.destroy');
+            Route::post('categories', [CategoryController::class, 'store'])
+                ->name('categories.store');
+            Route::patch('categories/{category:slug}', [CategoryController::class, 'update'])
+                ->name('categories.update');
+            Route::delete('categories/{category:slug}', [CategoryController::class, 'destroy'])
+                ->name('categories.destroy');
+        });
+
         // Izveštaj se pravi u redu poslova: 202, pa provera statusa.
         // Dozvola bez modela: Gate reports.view (odeljak 12.2).
         Route::middleware(['auth:sanctum', 'can:reports.view'])->group(function () {

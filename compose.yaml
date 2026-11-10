@@ -1,11 +1,11 @@
 # Knjižara u produkcionom obliku, na jednom računaru (odeljak 16.4):
 #   docker compose up -d --build
 #   docker compose exec app php artisan migrate --force
-# Tajne i podešavanja su u .env.production, koji nije u repozitorijumu.
+# Tajne i podešavanja su u .env.docker, koji nije u repozitorijumu.
 
 x-app: &app
   image: knjizara-app
-  env_file: .env.production
+  env_file: .env.docker
   restart: unless-stopped
   depends_on:
     mysql:

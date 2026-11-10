@@ -1,8 +1,8 @@
 # Knjižara
 
-Internet knjižara iz knjige *Napredne web tehnologije*: REST API u Laravelu 13 i JavaScript klijent koji ga koristi. Projekat raste kroz knjigu, glavu po glavu, a ovde je u stanju sa kraja glave 15.
+Internet knjižara iz knjige *Napredne web tehnologije*: REST API u Laravelu 13 i JavaScript klijent koji ga koristi. Projekat raste kroz knjigu, glavu po glavu, a ovde je u stanju sa kraja glave 17. Stanje na kraju svake glave označeno je git oznakom: `git checkout glava-12` vraća projekat na kraj glave 12.
 
-- Katalog knjiga, autora i kategorija, sa pretragom, filterima, sortiranjem i paginacijom.
+- Katalog knjiga, autora i kategorija, sa pretragom, filterima, sortiranjem i paginacijom; menadžer ga održava.
 - Porudžbine: transakcija koja skida knjige sa stanja, otkazivanje i statusi.
 - Nalozi: registracija sa potvrdom adrese, prijava sesijom (stranice knjižare) i tokenom (ostali klijenti), prijava preko GitHub-a, dvofaktorska prijava.
 - Uloge kupac, menadžer i administrator, sa dozvolama.
@@ -97,14 +97,14 @@ Bruno CLI se instalira globalno, van projekta: `npm install -g @usebruno/cli`. B
 Ceo sistem (nginx, PHP-FPM, red poslova, planer, Reverb, MySQL, Redis) podiže se sa `docker compose`. Lokalno radi na <https://localhost:8443>, sa samopotpisanim sertifikatom:
 
 ```bash
-cp .env.production.example .env.production   # upišite APP_KEY, lozinku baze i ključeve za Reverb
+cp .env.docker.example .env.docker   # upišite APP_KEY, lozinku baze i ključeve za Reverb
 mkdir -p docker/nginx/certs
 openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj "/CN=localhost" \
     -keyout docker/nginx/certs/knjizara.key -out docker/nginx/certs/knjizara.crt
-docker compose --env-file .env.production up -d --build
-docker compose --env-file .env.production exec app php artisan migrate --force
-docker compose --env-file .env.production exec app php artisan db:seed --class=CategorySeeder --force
-docker compose --env-file .env.production exec app php artisan knjizara:admin ana@knjizara.test "Ana Petrović"
+docker compose --env-file .env.docker up -d --build
+docker compose --env-file .env.docker exec app php artisan migrate --force
+docker compose --env-file .env.docker exec app php artisan db:seed --class=CategorySeeder --force
+docker compose --env-file .env.docker exec app php artisan knjizara:admin ana@knjizara.test "Ana Petrović"
 ```
 
 Na pravom serveru sertifikat izdaje Let's Encrypt, a `APP_URL` i `WEBSOCKET_ORIGIN` sadrže pravi domen (glava 16 knjige). GitHub Actions (`.github/workflows/ci.yml`) za svaki push pokreće stil, Larastan, testove na SQLite-u i MySQL-u, E2E testove i izgradnju slike.
@@ -121,6 +121,7 @@ Na pravom serveru sertifikat izdaje Let's Encrypt, a `APP_URL` i `WEBSOCKET_ORIG
 | `resources/js` | JavaScript klijent, po jedan modul za svaku stranicu |
 | `routes/api.php`, `routes/web.php` | rute API-ja i stranica |
 | `tests/Unit`, `tests/Feature`, `tests/e2e` | testovi |
+| `docs/api-v1.md`, `docs/adr` | ugovor API-ja i zapisi o važnim odlukama |
 
 ## Licenca
 

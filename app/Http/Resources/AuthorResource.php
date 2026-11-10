@@ -16,7 +16,8 @@ class AuthorResource extends ApiResource
      */
     public function toArray(Request $request): array
     {
-        $alone = $request->routeIs('api.v1.authors.index', 'api.v1.authors.show');
+        $alone = $request->routeIs('api.v1.authors.*')
+            && ! $request->routeIs('api.v1.authors.books');
 
         return [
             'id' => $this->id,

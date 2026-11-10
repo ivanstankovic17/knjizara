@@ -6,7 +6,9 @@ use App\Rules\CommaList;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -30,8 +32,8 @@ class BookQuery
         $query
             ->when($p['q'] ?? null, fn ($q, string $text) => $q->where(
                 fn (Builder $w) => $w
-                    ->where('title', 'like', "%{$text}%")
-                    ->orWhereRelation('authors', 'name', 'like', "%{$text}%")))
+                    ->where('books.title', 'like', "%{$text}%")
+                    ->orWhereIn('books.id', self::booksByAuthor($text))))
             ->when($p['category'] ?? null, fn ($q, string $slug) => $q
                 ->whereRelation('category', 'slug', $slug))
             ->when($p['author'] ?? null, fn ($q, string $ids) => $q
@@ -115,6 +117,21 @@ class BookQuery
             /** Broj knjiga na strani; podrazumevano 15. */
             'per_page' => ['sometimes', 'integer', 'between:1,50'],
         ];
+    }
+
+    /**
+     * Knjige autora čije ime sadrži tekst, kao podupit za whereIn.
+     *
+     * orWhereRelation bi napravio exists (...) koji MySQL izvršava za svaku
+     * knjigu posebno; sa 50.000 knjiga brojanje rezultata trajalo je 113 ms.
+     * Ovaj podupit se izvršava jednom: 10,6 ms (odeljak 17.3).
+     */
+    private static function booksByAuthor(string $text): QueryBuilder
+    {
+        return DB::table('author_book')
+            ->join('authors', 'authors.id', '=', 'author_book.author_id')
+            ->where('authors.name', 'like', "%{$text}%")
+            ->select('author_book.book_id');
     }
 
     /**
