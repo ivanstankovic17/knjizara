@@ -56,11 +56,18 @@ Schedule::command('queue:prune-failed --hours=168')->daily();
 
 // Prvi administrator na produkciji (odeljak 16.5), gde nema fabrika ni
 // probnih naloga. Lozinka je slučajna i prikazuje se samo jednom.
-Artisan::command('knjizara:admin {email} {name}', function (string $email, string $name) {
+Artisan::command('knjizara:admin {email} {name}', function (
+    string $email,
+    string $name,
+) {
     $password = Str::password(20);
 
-    $user = User::create(['name' => $name, 'email' => $email, 'password' => $password]);
-    $user->forceFill(['role' => Role::Admin, 'email_verified_at' => now()])->save();
+    $user = User::create([
+        'name' => $name, 'email' => $email, 'password' => $password,
+    ]);
+    $user->forceFill([
+        'role' => Role::Admin, 'email_verified_at' => now(),
+    ])->save();
 
     $this->info("Administrator {$email} je napravljen.");
     $this->line("Privremena lozinka: {$password}");
