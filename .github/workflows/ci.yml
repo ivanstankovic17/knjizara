@@ -1,0 +1,122 @@
+# Provere za svaki push i pull request (odeljak 16.6).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Novi push na istu granu prekida provere prethodnog, koje više nisu važne.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  provere:
+    name: Stil, statička analiza, ranjivosti
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: vendor/bin/pint --test
+      - run: vendor/bin/phpstan analyse --no-progress
+      - run: composer audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
+
+  testovi:
+    name: Testovi (${{ matrix.baza }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        baza: [sqlite, mysql]
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: knjizara_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ptest --silent"
+          --health-interval=5s --health-retries=20
+    env:
+      DB_CONNECTION: ${{ matrix.baza }}
+      DB_DATABASE: ${{ matrix.baza == 'mysql' && 'knjizara_test' || ':memory:' }}
+      DB_HOST: 127.0.0.1
+      DB_USERNAME: root
+      DB_PASSWORD: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - run: vendor/bin/pest
+
+  e2e:
+    name: E2E i Bruno
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: composer install --no-interaction --no-progress
+      - run: npm ci
+      - run: npm run build
+      - run: |
+          cp .env.example .env && php artisan key:generate
+          cp .env.e2e.example .env.e2e && php artisan key:generate --env=e2e
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - name: Bruno scenario
+        run: |
+          APP_ENV=e2e php artisan migrate:fresh --seeder=E2eSeeder --force
+          APP_ENV=e2e php artisan serve --port=8001 > /dev/null 2>&1 &
+          npm install -g @usebruno/cli@4.3.0
+          until curl -sf http://localhost:8001/up > /dev/null; do sleep 1; done
+          cd bruno && bru run Kupovina --env e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+
+  docker:
+    name: Docker slika
+    runs-on: ubuntu-latest
+    needs: [provere, testovi]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Slika se samo gradi, ne objavljuje: objavljivanje i postavljanje
+      # na server opisani su u odeljku 16.6.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -9,6 +9,7 @@ use App\Models\Book;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PlaceOrder
 {
@@ -17,7 +18,7 @@ class PlaceOrder
      */
     public function handle(User $user, array $cart): Order
     {
-        return DB::transaction(function () use ($user, $cart) {
+        $order = DB::transaction(function () use ($user, $cart) {
             $books = Book::lockForUpdate()
                 ->findOrFail(array_keys($cart))
                 ->keyBy('id');
@@ -51,5 +52,16 @@ class PlaceOrder
 
             return $order;
         });
+
+        // Poslovni događaj u logu (odeljak 16.7): posle potvrde transakcije,
+        // sa podacima po kojima se pretražuje, bez ličnih podataka kupca.
+        Log::info('Porudžbina primljena', [
+            'order_id' => $order->id,
+            'user_id' => $user->id,
+            'items' => count($cart),
+            'total' => $order->total,
+        ]);
+
+        return $order;
     }
 }

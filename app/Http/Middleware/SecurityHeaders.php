@@ -71,9 +71,17 @@ class SecurityHeaders
         ]);
     }
 
-    /** Adresa Reverb servera za WebSocket, na primer ws://localhost:8080. */
+    /**
+     * Adresa na koju se pregledač povezuje za WebSocket, na primer
+     * ws://localhost:8080. Iza nginx-a (odeljak 16.5) ona nije ista kao
+     * adresa na koju Laravel šalje događaje Reverbu, pa se zadaje posebno.
+     */
     private function reverbOrigin(): string
     {
+        if ($origin = config('knjizara.websocket_origin')) {
+            return $origin;
+        }
+
         $o = config('broadcasting.connections.reverb.options');
         $scheme = ($o['scheme'] ?? 'https') === 'https' ? 'wss' : 'ws';
 

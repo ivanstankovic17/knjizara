@@ -7,8 +7,9 @@ export default defineConfig({
     globalSetup: './tests/e2e/global-setup.js',
     use: {
         baseURL: 'http://localhost:8001',
-        // Edge koji je već instaliran, bez preuzimanja Playwright-ovih pregledača.
-        channel: 'msedge',
+        // Lokalno Edge koji je već instaliran; na CI serveru (odeljak 16.6)
+        // Playwright-ov Chromium, koji radni tok instalira.
+        channel: process.env.CI ? undefined : 'msedge',
         screenshot: 'only-on-failure',
         trace: 'retain-on-failure',
     },

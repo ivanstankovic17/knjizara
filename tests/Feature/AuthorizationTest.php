@@ -17,12 +17,13 @@ function prijavi(?string $role): void
 
 /*
  * Matrica „ko sme šta”: za svaku ulogu očekivan status (odeljak 12.1).
- * null je neprijavljen korisnik.
+ * null je neprijavljen korisnik. {knjiga} je id knjige iz testa: na MySQL-u
+ * brojač se ne vraća posle testa, pa prva knjiga nije uvek 1 (odeljak 16.6).
  */
 dataset('matrica', [
-    'gost menja knjigu' => [null, 'PATCH', '/api/v1/books/1', 401],
-    'kupac menja knjigu' => ['customer', 'PATCH', '/api/v1/books/1', 403],
-    'menadžer menja knjigu' => ['manager', 'PATCH', '/api/v1/books/1', 200],
+    'gost menja knjigu' => [null, 'PATCH', '/api/v1/books/{knjiga}', 401],
+    'kupac menja knjigu' => ['customer', 'PATCH', '/api/v1/books/{knjiga}', 403],
+    'menadžer menja knjigu' => ['manager', 'PATCH', '/api/v1/books/{knjiga}', 200],
     'kupac traži izveštaj' => ['customer', 'POST', '/api/v1/reports/sales', 403],
     'menadžer traži izveštaj' => ['manager', 'POST', '/api/v1/reports/sales', 202],
     'kupac vidi porudžbine' => ['customer', 'GET', '/api/v1/admin/orders', 403],
@@ -33,10 +34,11 @@ dataset('matrica', [
 
 it('poštuje matricu dozvola',
     function (?string $role, string $method, string $uri, int $status) {
-        Book::factory()->create(); // knjiga 1
+        $knjiga = Book::factory()->create();
         prijavi($role);
 
-        $this->json($method, $uri, ['price' => 1290])->assertStatus($status);
+        $this->json($method, str_replace('{knjiga}', $knjiga->id, $uri),
+            ['price' => 1290])->assertStatus($status);
     })->with('matrica');
 
 it('tuđa porudžbina izgleda kao nepostojeća (404)', function () {

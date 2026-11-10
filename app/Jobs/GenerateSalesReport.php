@@ -37,7 +37,14 @@ class GenerateSalesReport implements ShouldQueue
             ->selectRaw('sum(order_items.quantity) as copies')
             ->selectRaw('sum(order_items.quantity * order_items.unit_price)'
                 .' as revenue')
-            ->get();
+            ->get()
+            // MySQL vraća sum() kao decimalni broj, a PDO ga daje kao string
+            // ("2"); SQLite vraća ceo broj. U JSON-u izveštaja treba broj.
+            ->map(fn (object $row) => [
+                'category' => $row->category,
+                'copies' => (int) $row->copies,
+                'revenue' => (int) $row->revenue,
+            ]);
 
         $this->report->update([
             'status' => 'done',

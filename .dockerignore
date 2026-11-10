@@ -1,0 +1,23 @@
+# Šta ne ulazi u sliku (odeljak 16.4): tajne, zavisnosti koje slika pravi
+# sama, lokalne baze, keš i alati za razvoj.
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+public/build
+public/docs
+public/hot
+bootstrap/cache/*.php
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+database/*.sqlite
+tests
+bruno
+test-results
+playwright-report
+docker/nginx/certs

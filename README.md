@@ -92,6 +92,23 @@ cd bruno && bru run Kupovina --env e2e     # scenario kupovine
 
 Bruno CLI se instalira globalno, van projekta: `npm install -g @usebruno/cli`. Bruno scenario očekuje bazu koju je napravio `npx playwright test`, ili komandu `APP_ENV=e2e php artisan migrate:fresh --seeder=E2eSeeder --force`.
 
+## Produkcija u Docker-u
+
+Ceo sistem (nginx, PHP-FPM, red poslova, planer, Reverb, MySQL, Redis) podiže se sa `docker compose`. Lokalno radi na <https://localhost:8443>, sa samopotpisanim sertifikatom:
+
+```bash
+cp .env.production.example .env.production   # upišite APP_KEY, lozinku baze i ključeve za Reverb
+mkdir -p docker/nginx/certs
+openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj "/CN=localhost" \
+    -keyout docker/nginx/certs/knjizara.key -out docker/nginx/certs/knjizara.crt
+docker compose --env-file .env.production up -d --build
+docker compose --env-file .env.production exec app php artisan migrate --force
+docker compose --env-file .env.production exec app php artisan db:seed --class=CategorySeeder --force
+docker compose --env-file .env.production exec app php artisan knjizara:admin ana@knjizara.test "Ana Petrović"
+```
+
+Na pravom serveru sertifikat izdaje Let's Encrypt, a `APP_URL` i `WEBSOCKET_ORIGIN` sadrže pravi domen (glava 16 knjige). GitHub Actions (`.github/workflows/ci.yml`) za svaki push pokreće stil, Larastan, testove na SQLite-u i MySQL-u, E2E testove i izgradnju slike.
+
 ## Struktura
 
 | Fascikla | Šta je u njoj |

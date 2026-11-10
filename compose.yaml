@@ -1,0 +1,94 @@
+# Knjižara u produkcionom obliku, na jednom računaru (odeljak 16.4):
+#   docker compose up -d --build
+#   docker compose exec app php artisan migrate --force
+# Tajne i podešavanja su u .env.production, koji nije u repozitorijumu.
+
+x-app: &app
+  image: knjizara-app
+  env_file: .env.production
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+services:
+  app:
+    <<: *app
+    build:
+      context: .
+      target: app
+      args:
+        VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 8443
+        VITE_REVERB_SCHEME: https
+
+  # Radnik reda poslova (glava 10): ako padne, Docker ga ponovo pokreće.
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --max-time=3600
+    stop_signal: SIGTERM
+
+  # Planer poslova: pokreće zakazane komande iz routes/console.php.
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+
+  reverb:
+    <<: *app
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 8443
+        VITE_REVERB_SCHEME: https
+    image: knjizara-web
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+      - "8443:443"
+    volumes:
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+      - reverb
+    # /up (Laravel) proverava da aplikacija odgovara; status se vidi u
+    # docker compose ps, a koristi ga i balanser opterećenja (16.7).
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--no-check-certificate",
+             "https://127.0.0.1/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mysql-data:
+  redis-data:

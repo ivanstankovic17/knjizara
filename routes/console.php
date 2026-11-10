@@ -1,10 +1,13 @@
 <?php
 
 use App\Enums\OrderStatus;
+use App\Enums\Role;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\PriceFormatter;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
 Artisan::command('inspire', function () {
@@ -45,3 +48,21 @@ Artisan::command('knjizara:reverb-keys', function () {
 
     file_put_contents(base_path('.env'), $env);
 })->purpose('Upisuje ključeve za Reverb u .env, ako su prazni');
+
+// Zakazani poslovi (odeljak 16.5). Na produkciji ih pokreće kontejner
+// scheduler (php artisan schedule:work), a spisak daje schedule:list.
+Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command('queue:prune-failed --hours=168')->daily();
+
+// Prvi administrator na produkciji (odeljak 16.5), gde nema fabrika ni
+// probnih naloga. Lozinka je slučajna i prikazuje se samo jednom.
+Artisan::command('knjizara:admin {email} {name}', function (string $email, string $name) {
+    $password = Str::password(20);
+
+    $user = User::create(['name' => $name, 'email' => $email, 'password' => $password]);
+    $user->forceFill(['role' => Role::Admin, 'email_verified_at' => now()])->save();
+
+    $this->info("Administrator {$email} je napravljen.");
+    $this->line("Privremena lozinka: {$password}");
+    $this->line('Promenite je posle prve prijave.');
+})->purpose('Pravi nalog administratora sa slučajnom lozinkom');

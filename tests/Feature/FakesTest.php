@@ -98,7 +98,8 @@ it('posao izveštaja sabira prodaju po kategorijama, bez otkazanih', function ()
         ->status->toBe('done')
         ->result->total->toBe(2500)
         ->result->categories->{0}->category->toBe('Roman')
-        ->result->categories->{0}->copies->toBe(2);
+        ->result->categories->{0}->copies->toBe(2)
+        ->result->categories->{0}->revenue->toBe(2000);
 });
 
 it('promena statusa šalje događaj samo vlasniku porudžbine', function () {
