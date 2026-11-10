@@ -5,6 +5,7 @@ use App\Models\Order;
 use App\Services\PriceFormatter;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -25,3 +26,22 @@ Artisan::command('knjizara:status {porudzbina} {status}', function (int $porudzb
     $order->changeStatus($new);
     $this->info("Porudžbina {$order->id}: {$order->status->value}");
 })->purpose('Menja status porudžbine i obaveštava kupca');
+
+// Prvo pokretanje (README, odeljak 15.5): Reverb traži identifikator,
+// ključ i tajnu aplikacije, a .env.example ih ima prazne, kao i APP_KEY.
+Artisan::command('knjizara:reverb-keys', function () {
+    $env = file_get_contents(base_path('.env'));
+    $values = [
+        'REVERB_APP_ID' => (string) random_int(100_000, 999_999),
+        'REVERB_APP_KEY' => Str::lower(Str::random(20)),
+        'REVERB_APP_SECRET' => Str::lower(Str::random(20)),
+    ];
+
+    foreach ($values as $name => $value) {
+        // Postojeća vrednost se ne menja: klijenti već koriste taj ključ.
+        $env = preg_replace("/^{$name}=$/m", "{$name}={$value}", $env, 1, $count);
+        $this->line($count ? "{$name} je upisan." : "{$name} već ima vrednost.");
+    }
+
+    file_put_contents(base_path('.env'), $env);
+})->purpose('Upisuje ključeve za Reverb u .env, ako su prazni');

@@ -7,12 +7,16 @@ use App\Http\Queries\BookQuery;
 use App\Http\Resources\BookResource;
 use App\Models\Author;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 
 class AuthorBookController extends Controller
 {
     /**
-     * GET /api/v1/authors/{author}/books: knjige jednog autora, sa istim
-     * parametrima kao spisak svih knjiga.
+     * Knjige jednog autora.
+     *
+     * Isti parametri kao spisak svih knjiga.
+     *
+     * @throws ValidationException
      */
     public function __invoke(
         Author $author,

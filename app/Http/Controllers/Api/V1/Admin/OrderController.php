@@ -19,7 +19,9 @@ use Illuminate\Validation\Rule;
 class OrderController extends Controller
 {
     /**
-     * GET /api/v1/admin/orders?status=pending
+     * Sve porudžbine.
+     *
+     * Sa podacima o kupcu; filter status.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -38,7 +40,12 @@ class OrderController extends Controller
     }
 
     /**
-     * PATCH /api/v1/admin/orders/{order}  {"status": "shipped"}
+     * Promena statusa porudžbine.
+     *
+     * Dozvoljeni prelazi su pending u paid i paid u shipped; ostali daju
+     * 409.
+     *
+     * @throws InvalidStatusTransitionException
      */
     public function update(Request $request, Order $order): OrderResource
     {

@@ -17,7 +17,9 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * GET /api/v1/admin/users?role=manager
+     * Spisak korisnika.
+     *
+     * Filter role.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -34,7 +36,9 @@ class UserController extends Controller
     }
 
     /**
-     * PATCH /api/v1/admin/users/{user}  {"role": "manager"}
+     * Promena uloge korisnika.
+     *
+     * Administrator ne može da menja sopstvenu ulogu (403).
      */
     public function update(Request $request, User $user): UserResource
     {

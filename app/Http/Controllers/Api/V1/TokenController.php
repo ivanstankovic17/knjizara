@@ -15,7 +15,9 @@ use Illuminate\Http\Response;
 class TokenController extends Controller
 {
     /**
-     * POST /api/v1/tokens: token se vidi samo u ovom odgovoru.
+     * Novi token za pristup.
+     *
+     * Token se vidi samo u ovom odgovoru i važi 30 dana.
      */
     public function store(Request $request, CheckCredentials $credentials): JsonResponse
     {
@@ -32,7 +34,7 @@ class TokenController extends Controller
     }
 
     /**
-     * DELETE /api/v1/tokens/current: odjava ovog klijenta.
+     * Opoziv trenutnog tokena.
      */
     public function destroy(Request $request): Response
     {

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Prijava sesijom, za JavaScript klijent na istom domenu (Sanctum SPA).
@@ -19,7 +20,10 @@ use Illuminate\Validation\Rules\Password;
 class AuthController extends Controller
 {
     /**
-     * POST /api/v1/auth/register
+     * Registracija novog kupca.
+     *
+     * Na adresu stiže link za potvrdu. Zahtev sa stranica knjižare odmah
+     * dobija i sesiju.
      */
     public function register(Request $request): JsonResponse
     {
@@ -45,7 +49,12 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/login
+     * Prijava sesijom.
+     *
+     * Samo za zahteve sa stranica knjižare; ostali klijenti koriste
+     * POST /tokens. Kada je uključena dvofaktorska prijava, traži se i polje code.
+     *
+     * @throws ValidationException
      */
     public function login(Request $request, CheckCredentials $credentials): UserResource
     {
@@ -64,7 +73,9 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/logout
+     * Odjava sesijom.
+     *
+     * Klijent sa tokenom se odjavljuje sa DELETE /tokens/current.
      */
     public function logout(Request $request): Response
     {
@@ -80,7 +91,9 @@ class AuthController extends Controller
     }
 
     /**
-     * GET /api/v1/auth/me: prijavljeni korisnik (sesijom ili tokenom).
+     * Prijavljeni korisnik.
+     *
+     * Radi i sa sesijom i sa tokenom.
      */
     public function me(Request $request): UserResource
     {
@@ -88,7 +101,7 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/email/verification-notification: ponovo pošalji link.
+     * Ponovno slanje linka za potvrdu adrese.
      */
     public function sendVerification(Request $request): Response
     {

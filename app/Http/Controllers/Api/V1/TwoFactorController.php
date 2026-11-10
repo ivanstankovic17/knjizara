@@ -17,7 +17,10 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 class TwoFactorController extends Controller
 {
     /**
-     * POST /api/v1/auth/two-factor: nova tajna, još nepotvrđena.
+     * Uključivanje dvofaktorske prijave.
+     *
+     * Vraća novu tajnu i URI za QR kod. Prijava je uključena tek posle
+     * potvrde.
      */
     public function store(Request $request): JsonResponse
     {
@@ -36,8 +39,9 @@ class TwoFactorController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/two-factor/confirm: korisnik dokazuje da je
-     * aplikacija za autentifikaciju podešena tako što pošalje kod.
+     * Potvrda dvofaktorske prijave.
+     *
+     * Korisnik šalje kod iz aplikacije za autentifikaciju.
      */
     public function confirm(Request $request): Response
     {
@@ -55,7 +59,9 @@ class TwoFactorController extends Controller
     }
 
     /**
-     * DELETE /api/v1/auth/two-factor: traži trenutnu lozinku.
+     * Isključivanje dvofaktorske prijave.
+     *
+     * Traži trenutnu lozinku.
      */
     public function destroy(Request $request): Response
     {

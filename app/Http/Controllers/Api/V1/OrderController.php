@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\CancelOrder;
 use App\Actions\PlaceOrder;
+use App\Exceptions\OrderNotCancellableException;
+use App\Exceptions\OutOfStockException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Dedoc\Scramble\Attributes\IgnoreResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,7 +23,9 @@ use Illuminate\Support\Facades\Gate;
 class OrderController extends Controller
 {
     /**
-     * GET /api/v1/orders: sopstvene porudžbine, najnovije prve.
+     * Moje porudžbine.
+     *
+     * Samo porudžbine prijavljenog kupca, najnovije prve.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -33,10 +38,17 @@ class OrderController extends Controller
     }
 
     /**
-     * POST /api/v1/orders: 201, 409 (nema na stanju), 422.
+     * Nova porudžbina.
+     *
+     * Cene, ukupan iznos i status određuje server. Ako neke knjige nema
+     * dovoljno, ništa se ne menja (409).
+     *
+     * @throws OutOfStockException
      */
-    public function store(StoreOrderRequest $request, PlaceOrder $placeOrder): JsonResponse
-    {
+    public function store(
+        StoreOrderRequest $request,
+        PlaceOrder $placeOrder,
+    ): JsonResponse {
         $order = $placeOrder->handle($request->user(), $request->cart());
 
         return (new OrderResource($order->load('items.book')))
@@ -46,8 +58,11 @@ class OrderController extends Controller
     }
 
     /**
-     * GET /api/v1/orders/{order}: vlasnik ili menadžer; ostali dobijaju 404.
+     * Jedna porudžbina.
+     *
+     * Vlasnik ili menadžer; ostali dobijaju 404, kao da porudžbina ne postoji.
      */
+    #[IgnoreResponse(403)] // OrderPolicy odbija sa 404 (denyAsNotFound), ne sa 403.
     public function show(Order $order): OrderResource
     {
         Gate::authorize('view', $order);
@@ -57,8 +72,13 @@ class OrderController extends Controller
     }
 
     /**
-     * POST /api/v1/orders/{order}/cancel: 200 ili 409.
+     * Otkazivanje porudžbine.
+     *
+     * Samo porudžbina na čekanju (pending); inače 409.
+     *
+     * @throws OrderNotCancellableException
      */
+    #[IgnoreResponse(403)] // Kao i show: tuđa porudžbina je 404.
     public function cancel(Order $order, CancelOrder $cancelOrder): OrderResource
     {
         Gate::authorize('cancel', $order);

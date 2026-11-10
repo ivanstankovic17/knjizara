@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\GithubLoginController;
 use App\Http\Controllers\HomeController;
+use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
@@ -33,3 +34,8 @@ Route::get('/email/potvrda/{id}/{hash}', function (EmailVerificationRequest $req
 Route::get('/auth/github', [GithubLoginController::class, 'redirect'])->name('github.redirect');
 Route::get('/auth/github/callback', [GithubLoginController::class, 'callback'])
     ->name('github.callback');
+
+// Dokumentacija API-ja (glava 15): Swagger UI nad /docs/api.json.
+Route::view('/docs/api', 'api-docs')
+    ->middleware(RestrictedDocsAccess::class)
+    ->name('docs.api');

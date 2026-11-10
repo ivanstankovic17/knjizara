@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class PasswordResetController extends Controller
 {
     /**
-     * POST /api/v1/auth/forgot-password
+     * Zahtev za novu lozinku.
      *
      * Odgovor je isti bez obzira na to da li nalog postoji, da se preko
      * ove adrese ne bi moglo proveriti ko je kupac knjižare.
@@ -33,7 +33,9 @@ class PasswordResetController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/reset-password
+     * Postavljanje nove lozinke.
+     *
+     * Token stiže mejlom. Posle promene su svi tokeni za pristup opozvani.
      */
     public function reset(Request $request): JsonResponse
     {

@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/login.js',
                 'resources/js/account.js',
                 'resources/js/admin-orders.js',
+                'resources/js/api-docs.js',
             ],
             refresh: true,
         }),

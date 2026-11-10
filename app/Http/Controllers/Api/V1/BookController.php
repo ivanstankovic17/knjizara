@@ -13,11 +13,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class BookController extends Controller
 {
     /**
-     * GET /api/v1/books: stranica knjiga sa pretragom, filterima i sortiranjem.
+     * Spisak knjiga.
+     *
+     * Pretraga, filteri, sortiranje i paginacija.
+     *
+     * @throws ValidationException
      */
     public function index(BookQuery $query): AnonymousResourceCollection
     {
@@ -25,7 +30,9 @@ class BookController extends Controller
     }
 
     /**
-     * POST /api/v1/books: nova knjiga; 201 sa zaglavljem Location.
+     * Nova knjiga.
+     *
+     * Odgovor 201 ima zaglavlje Location sa adresom nove knjige.
      */
     public function store(StoreBookRequest $request): JsonResponse
     {
@@ -43,7 +50,9 @@ class BookController extends Controller
     }
 
     /**
-     * GET /api/v1/books/{book}: jedna knjiga, uvek sa kategorijom i autorima.
+     * Jedna knjiga.
+     *
+     * Uvek sa kategorijom i autorima.
      */
     public function show(Book $book): BookResource
     {
@@ -51,7 +60,9 @@ class BookController extends Controller
     }
 
     /**
-     * PATCH /api/v1/books/{book}: menjaju se samo poslata polja.
+     * Izmena knjige.
+     *
+     * Menjaju se samo poslata polja.
      */
     public function update(UpdateBookRequest $request, Book $book): BookResource
     {
@@ -66,7 +77,9 @@ class BookController extends Controller
     }
 
     /**
-     * DELETE /api/v1/books/{book}: 204, ili 409 ako je knjiga prodavana.
+     * Brisanje knjige.
+     *
+     * Knjiga koja je bila u nekoj porudžbini ne može da se obriše (409).
      */
     public function destroy(Book $book): Response
     {

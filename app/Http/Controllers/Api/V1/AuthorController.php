@@ -11,7 +11,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class AuthorController extends Controller
 {
     /**
-     * GET /api/v1/authors: stranica autora, po imenu, sa brojem knjiga.
+     * Spisak autora.
+     *
+     * Po imenu, sa brojem knjiga.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -31,7 +33,7 @@ class AuthorController extends Controller
     }
 
     /**
-     * GET /api/v1/authors/{author}
+     * Jedan autor.
      */
     public function show(Author $author): AuthorResource
     {

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\Permission;
 use App\Models\User;
+use App\OpenApi\Documentation;
 use App\Services\PriceFormatter;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -69,5 +70,8 @@ class AppServiceProvider extends ServiceProvider
             ->action('Postavi novu lozinku', url('/lozinka/nova')
                 .'?'.http_build_query(['token' => $token, 'email' => $user->email]))
             ->line('Link važi 60 minuta. Ako niste vi tražili novu lozinku, zanemarite ovu poruku.'));
+
+        // OpenAPI specifikacija koju Scramble generiše iz koda (glava 15).
+        Documentation::register();
     }
 }

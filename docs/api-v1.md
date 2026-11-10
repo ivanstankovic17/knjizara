@@ -1,6 +1,6 @@
 # API knjižare, verzija 1
 
-Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6). Ugovor važi za katalog i porudžbine. Registraciju i prijavu dodajemo u glavi 11, a upravljanje korisnicima u glavi 12. Sve adrese su relativne u odnosu na `/api/v1`. Svi zahtevi šalju `Accept: application/json`, a zahtevi sa telom i `Content-Type: application/json`.
+Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6), dopunjen nalozima i prijavom (glava 11) i upravljanjem (glava 12). Test `tests/Feature/OpenApiContractTest.php` proverava da specifikacija koju Scramble generiše iz koda (`/docs/api.json`, glava 15) ima iste operacije i statusne kodove kao tabele u ovom fajlu. Sve adrese su relativne u odnosu na `/api/v1`. Svi zahtevi šalju `Accept: application/json`, a zahtevi sa telom i `Content-Type: application/json`.
 
 ## Krajnje tačke API-ja knjižare, verzija 1
 
@@ -8,14 +8,14 @@ Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6). Ugovor važi za katalog i 
 |---|---|---|---|
 | `GET /books` | svi | `200`, stranica knjiga | `422` |
 | `GET /books/{id}` | svi | `200`, knjiga | `404` |
-| `POST /books` | menadžer | `201` + `Location` | `401`, `403`, `415`, `422` |
-| `PATCH /books/{id}` | menadžer | `200`, izmenjena knjiga | `401`, `403`, `404`, `415`, `422` |
+| `POST /books` | menadžer | `201` + `Location` | `401`, `403`, `422` |
+| `PATCH /books/{id}` | menadžer | `200`, izmenjena knjiga | `401`, `403`, `404`, `422` |
 | `DELETE /books/{id}` | menadžer | `204` | `401`, `403`, `404`, `409` |
 | `GET /authors` | svi | `200`, stranica autora | `422` |
 | `GET /authors/{id}` | svi | `200`, autor | `404` |
 | `GET /authors/{id}/books` | svi | `200`, stranica knjiga autora | `404`, `422` |
 | `GET /categories` | svi | `200` + `ETag`, sve kategorije, bez paginacije | `304` za uslovni zahtev |
-| `GET /categories/{slug}` | svi | `200`, kategorija | `404` |
+| `GET /categories/{slug}` | svi | `200` + `ETag`, kategorija | `304` za uslovni zahtev, `404` |
 | `POST /orders` | kupac | `201` + `Location` | `401`, `409` (nema na stanju), `422` |
 | `GET /orders` | kupac | `200`, stranica *sopstvenih* porudžbina | `401` |
 | `GET /orders/{id}` | vlasnik, menadžer | `200`, porudžbina sa stavkama | `401`, `404` |
@@ -26,6 +26,27 @@ Ugovor API-ja knjižare, verzija 1 (knjiga, glava 6). Ugovor važi za katalog i 
 | `PATCH /admin/orders/{id}` | menadžer | `200`, porudžbina sa novim statusom (`paid`, `shipped`) | `401`, `403`, `404`, `409` (nedozvoljen prelaz), `422` |
 | `GET /admin/users` | administrator | `200`, stranica korisnika; filter `role` | `401`, `403`, `422` |
 | `PATCH /admin/users/{id}` | administrator | `200`, korisnik sa novom ulogom | `401`, `403` (sopstvena uloga), `404`, `422` |
+
+Kodovi koje može da dobije svaki zahtev nisu ponovljeni u redovima: `429` kada klijent pošalje više od 60 zahteva u minuti (zaglavlje `Retry-After` kaže koliko da čeka), a zahtev sa telom i `415` kada telo nije JSON, odnosno `400` kada JSON nije ispravan.
+
+## Nalozi, prijava i tokeni
+
+| Zahtev | Ko sme | Uspeh | Greške |
+|---|---|---|---|
+| `POST /auth/register` | svi | `201`, novi korisnik | `422` |
+| `POST /auth/login` | stranice knjižare (sesija) | `200`, korisnik | `400` (klijent bez sesije), `422` |
+| `POST /auth/logout` | prijavljen, sesija | `204` | `400` (klijent bez sesije), `401` |
+| `GET /auth/me` | prijavljen | `200`, korisnik | `401` |
+| `POST /auth/email/verification-notification` | prijavljen | `202`, link je poslat | `401` |
+| `POST /auth/forgot-password` | svi | `202`, isti odgovor za svaki email | `422` |
+| `POST /auth/reset-password` | svi, sa tokenom iz mejla | `200` | `422` |
+| `POST /auth/two-factor` | prijavljen | `200`, tajni ključ i URI za QR kod | `401`, `409` (već uključena) |
+| `POST /auth/two-factor/confirm` | prijavljen | `204` | `401`, `422` |
+| `DELETE /auth/two-factor` | prijavljen | `204` | `401`, `422` (pogrešna lozinka) |
+| `POST /tokens` | svi | `201`, token za pristup | `422` |
+| `DELETE /tokens/current` | prijavljen tokenom | `204` | `401` |
+
+Prijava sesijom (`/auth/login`, `/auth/logout`) radi samo za zahteve sa stranica knjižare. Ostali klijenti dobijaju token sa `POST /tokens` i šalju ga u zaglavlju `Authorization: Bearer ...`. Kada je za nalog uključena dvofaktorska prijava, `POST /tokens` i `POST /auth/login` traže i polje `code`.
 
 Uloge i dozvole (glava 12): menadžer ima `catalog.manage`, `orders.manage` i `reports.view`, a administrator i `users.manage`. Prijavljenom korisniku resursi vraćaju i polje `can` sa akcijama koje sme da izvede, na primer `"can": {"update": true, "delete": true}` za knjigu ili `"can": {"cancel": false}` za porudžbinu. Porudžbina za menadžera ima i polje `customer`.
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Queries;
 
-use Closure;
+use App\Rules\CommaList;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,11 +20,6 @@ class BookQuery
     public const SORTS = ['title', 'price', 'published_year', 'created_at'];
 
     public const INCLUDES = ['authors', 'category'];
-
-    private const PARAMS = [
-        'q', 'category', 'author', 'min_price', 'max_price', 'in_stock',
-        'sort', 'include', 'page', 'per_page',
-    ];
 
     public function __construct(private Request $request) {}
 
@@ -67,42 +62,59 @@ class BookQuery
      */
     private function validated(): array
     {
-        $unknown = array_diff(array_keys($this->request->query()), self::PARAMS);
+        $unknown = array_diff(array_keys($this->request->query()), array_keys(self::rules()));
         if ($unknown) {
             throw ValidationException::withMessages(
                 array_fill_keys($unknown, 'Nepoznat parametar.'));
         }
 
-        return Validator::make($this->request->query(), [
-            'q' => ['sometimes', 'string', 'min:2', 'max:100'],
-            'category' => ['sometimes', 'string', Rule::exists('categories', 'slug')],
-            'author' => ['sometimes', 'regex:/^\d+(,\d+)*$/'],
-            'min_price' => ['sometimes', 'integer', 'min:0'],
-            'max_price' => ['sometimes', 'integer', 'min:0'],
-            'in_stock' => ['sometimes', 'boolean'],
-            'sort' => ['sometimes', 'string', $this->onlyFrom(self::SORTS, true)],
-            'include' => ['sometimes', 'string', $this->onlyFrom(self::INCLUDES)],
-            'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'between:1,50'],
-        ])->validate();
+        return Validator::make($this->request->query(), self::rules())->validate();
     }
 
     /**
-     * Pravilo validacije: vrednost je spisak odvojen zarezima, a svaki
-     * član je sa spiska dozvoljenih (uz minus ispred, ako je $signed).
+     * Pravila su ujedno i spisak dozvoljenih parametara. Komentari iznad
+     * pravila su opisi parametara u dokumentaciji API-ja (odeljak 15.3).
+     *
+     * @return array<string, list<mixed>>
      */
-    private function onlyFrom(array $allowed, bool $signed = false): Closure
+    public static function rules(): array
     {
-        return function (string $attribute, mixed $value, Closure $fail) use (
-            $allowed, $signed
-        ) {
-            foreach (explode(',', (string) $value) as $item) {
-                if (! in_array($signed ? ltrim($item, '-') : $item, $allowed, true)) {
-                    $fail("Vrednost „{$item}” nije dozvoljena. Dozvoljeno: "
-                        .implode(', ', $allowed).'.');
-                }
-            }
-        };
+        return [
+            /** Tekst u naslovu ili u imenu autora. */
+            'q' => ['sometimes', 'string', 'min:2', 'max:100'],
+            /**
+             * Slug kategorije.
+             *
+             * @example roman
+             */
+            'category' => ['sometimes', 'string', Rule::exists('categories', 'slug')],
+            /**
+             * Identifikatori autora odvojeni zarezima; knjiga ima bar jednog.
+             *
+             * @example 7,12
+             */
+            'author' => ['sometimes', 'regex:/^\d+(,\d+)*$/'],
+            /** Najmanja cena u dinarima, uključujući granicu. */
+            'min_price' => ['sometimes', 'integer', 'min:0'],
+            /** Najveća cena u dinarima, uključujući granicu. */
+            'max_price' => ['sometimes', 'integer', 'min:0'],
+            /** Samo knjige na stanju. */
+            'in_stock' => ['sometimes', 'boolean'],
+            /**
+             * Polja title, price, published_year, created_at, odvojena zarezima;
+             * minus ispred polja znači opadajući redosled. Podrazumevano title.
+             *
+             * @example -price,title
+             */
+            'sort' => ['sometimes', 'string',
+                new CommaList(self::SORTS, signed: true)],
+            /** Povezani resursi koji se ugrađuju u knjigu: authors, category. */
+            'include' => ['sometimes', 'string', new CommaList(self::INCLUDES)],
+            /** Broj strane, od 1. */
+            'page' => ['sometimes', 'integer', 'min:1'],
+            /** Broj knjiga na strani; podrazumevano 15. */
+            'per_page' => ['sometimes', 'integer', 'between:1,50'],
+        ];
     }
 
     /**

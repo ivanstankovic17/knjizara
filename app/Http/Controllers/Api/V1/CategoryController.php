@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Cache;
 class CategoryController extends Controller
 {
     /**
-     * GET /api/v1/categories: sve kategorije, bez paginacije.
+     * Sve kategorije.
+     *
+     * Bez paginacije; odgovor ima ETag.
      */
     public function index(): JsonResponse
     {
@@ -27,7 +29,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * GET /api/v1/categories/{category:slug}
+     * Jedna kategorija.
      */
     public function show(Category $category): CategoryResource
     {

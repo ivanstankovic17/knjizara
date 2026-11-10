@@ -12,7 +12,10 @@ class ReportController extends Controller
     private const JSON = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
     /**
-     * POST /api/v1/reports/sales: posao ide u red, odgovor stiže odmah.
+     * Izveštaj o prodaji.
+     *
+     * Posao ide u red. Odgovor 202 stiže odmah, a status se prati na adresi
+     * iz zaglavlja Location.
      */
     public function store(): JsonResponse
     {
@@ -25,7 +28,10 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /api/v1/reports/{report}: status, a kada je gotov i rezultat.
+     * Status izveštaja.
+     *
+     * Dok se izveštaj pravi, odgovor ima zaglavlje Retry-After; kada je
+     * gotov, sadrži i rezultat.
      */
     public function show(Report $report): JsonResponse
     {
