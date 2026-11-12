@@ -125,4 +125,6 @@ Na pravom serveru sertifikat izdaje Let's Encrypt, a `APP_URL` i `WEBSOCKET_ORIG
 
 ## Licenca
 
-MIT.
+Kod knjižare je objavljen pod licencom MIT (fajl [`LICENSE`](LICENSE)):
+sme da se koristi, menja i deli, i u komercijalnim projektima, uz uslov
+da se sačuva tekst licence i ime autora.

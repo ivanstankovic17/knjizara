@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "ivanstankovic17/knjizara",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Internet knjižara: REST API u Laravelu, primer iz knjige Napredne web tehnologije.",
+    "keywords": ["laravel", "rest-api", "knjizara"],
     "license": "MIT",
     "require": {
         "php": "^8.3",
