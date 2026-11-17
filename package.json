@@ -7,7 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
-        "@playwright/test": "^1.65.0",
+        "@playwright/test": "^1.65.1",
         "concurrently": "^10.0.3",
         "laravel-echo": "^2.6.3",
         "laravel-vite-plugin": "^3.1",
