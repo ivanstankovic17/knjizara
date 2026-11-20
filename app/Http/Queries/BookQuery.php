@@ -43,7 +43,8 @@ class BookQuery
                 ->where('price', '>=', $p['min_price']))
             ->when(isset($p['max_price']), fn ($q) => $q
                 ->where('price', '<=', $p['max_price']))
-            ->when($p['in_stock'] ?? false, fn ($q) => $q->where('stock', '>', 0));
+            ->when($p['in_stock'] ?? false, fn ($q) => $q
+                ->where('stock', '>', 0));
 
         foreach ($this->sorts($p['sort'] ?? 'title') as [$column, $direction]) {
             $query->orderBy("books.{$column}", $direction);

@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 abstract class ApiResource extends JsonResource
 {
     /**
-     * Ćirilica, latinica sa kvačicama i kose crte u adresama ostaju
+     * Latinica sa kvačicama i kose crte u adresama ostaju
      * čitljive, umesto ć i \/.
      */
     public function jsonOptions(): int
